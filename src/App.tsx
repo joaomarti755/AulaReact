@@ -26,7 +26,6 @@ function App() {
               <Route path="/cadastro" element={<Register />} />
               <Route path="/perfil/:username" element={<Profile />} />
               <Route path="/usuarios" element={<Users />} />
-
             </Routes>
           </Suspense>
         </main>
