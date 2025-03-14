@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getUsuarios, deleteUsuario } from "../../api";
+import { getUsuarios, deleteUsuario, updateUsuario, type Usuario } from "../../api";
 
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Swal from 'sweetalert2'
@@ -8,8 +8,10 @@ import Swal from 'sweetalert2'
 function Users() {
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState<string | number | null>(null)
+  const [editedUser, setEditedUser] = useState<Usuario | null>(null)
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = async () => { 
     try{
       setLoading(true)
       const data = await getUsuarios()
@@ -46,6 +48,11 @@ function Users() {
         Swal.fire("Erro!", "Não foi possível remover o usuário", "error")
       }
     }
+  }
+
+  const handleEdit = (usuario: Usuario) => {
+    setEditingId(usuario.id || null)
+    setEditedUser({ ...usuario })
   }
 
   return (
