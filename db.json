@@ -1,3 +1,11 @@
 {
-  "usuarios": []
+  "usuarios": [
+    {
+      "id": "0525",
+      "nome": "Jose",
+      "sobrenome": "Silva",
+      "email": "js@sj.com",
+      "cpf": "12121212"
+    }
+  ]
 }
