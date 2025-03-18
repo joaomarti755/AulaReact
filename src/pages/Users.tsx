@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 
 import { getUsuarios, deleteUsuario, updateUsuario, type Usuario } from "../../api";
 
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTimes, FaTrash, FaSave } from "react-icons/fa";
 import Swal from 'sweetalert2'
+import { FaS } from "react-icons/fa6";
 
 function Users() {
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | number | null>(null)
   const [editedUser, setEditedUser] = useState<Usuario | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const fetchUsuarios = async () => { 
     try{
@@ -55,6 +57,82 @@ function Users() {
     setEditedUser({ ...usuario })
   }
 
+  const handleChanges = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editedUser) return;
+    const { name, value } = e.target
+    setEditedUser(prev => ({ 
+      ...prev!, 
+      [name]: value 
+    }))
+  }
+
+  const handleSave = async () => {
+    if (!editedUser || !editingId) return
+    setIsUpdating(true)
+    try {
+      setIsUpdating(true)
+      await updateUsuario(editingId, editedUser)
+      setUsuarios(prev => prev.map(user => user.id === editedUser.id ? editedUser : user))
+      setEditingId(null)
+      Swal.fire("Atualizado", "O usuário foi atualizado com sucesso", "success")
+    } catch (error) {
+      console.log("Erro ao atualizar o usuário", error)
+      Swal.fire("Erro!", "Não foi possível atualizar o usuário", "error")
+    } finally {
+      setEditedUser(null)
+      setEditedUser(null)
+      setIsUpdating(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingId(null) 
+    setEditedUser(null)
+  }
+
+  const renderInputField = (fieldname: keyof Usuario, value: string) => {
+    return (
+      <input
+      type="text"
+      name={fieldname}
+      value={value}
+      onChange={handleChanges}
+      className="p-2"
+      />
+    )
+    
+  }
+
+  const renderActions = (usuario: Usuario) => {
+    if (usuario.id === editingId) {
+      return (
+        <div className="flex justify-center gap-3">
+          <button onClick={handleSave} disabled={isUpdating}>
+            <FaSave />
+            <span> Salvar </span>
+          </button>
+          <button onClick={handleCancel} disabled={isUpdating}>
+            <FaTimes />
+            <span> Cancelar </span>
+          </button>
+        </div>
+      )
+    } else {
+      return (
+        <>
+        <button onClick={() => handleEdit(usuario)}>
+          <FaEdit />
+          <span> Editar </span>
+        </button>  
+        <button onClick={() => handleDelete(usuario.id)}>
+          <FaTrash className="text-red-500" />
+          <span> Excluir </span>
+        </button>
+        </>
+      )
+    }
+  }
+
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-blue-900">
       <h1 className="text-2xl font-bold text-center text-gray-400">
@@ -79,15 +157,24 @@ function Users() {
         <tbody className="bg-gray-200">
           {usuarios.map((usuario) => (
             <tr>
-              <td className="px-2"> {usuario.nome} </td>
-              <td className="px-2"> {usuario.sobrenome} </td>
-              <td className="px-2"> {usuario.email}  </td>
-              <td className="px-2"> {usuario.sobrenome} </td>
+              <td className="px-2">
+                {editingId === usuario.id ? 
+                  renderInputField("nome", editedUser?.nome || "") : usuario.nome}
+              </td>
+              <td className="px-2">
+                {editingId === usuario.id ? 
+                  renderInputField("sobrenome", editedUser?.sobrenome || "") : usuario.sobrenome}
+              </td>
+              <td className="px-2">  
+                {editingId === usuario.id ? 
+                  renderInputField("email", editedUser?.email || "") : usuario.email}
+              </td>
+              <td className="px-2">
+                {editingId === usuario.id ? 
+                  renderInputField("cpf", editedUser?.cpf || "") : usuario.cpf}
+              </td>
               <td className="px-2 text-center flex justify-center gap-3">
-                <FaEdit />
-                <button onClick={() => handleDelete(usuario.id)}>
-                  <FaTrash className="text-red-500" />
-                </button>
+                {renderActions(usuario)}
               </td>
             </tr>
           ))}
